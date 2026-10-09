@@ -1,5 +1,5 @@
 // AnventoHermes: one EC2 box running the Hermes Slack gateway. Runbook: README.md.
-import { App, CfnOutput, SecretValue, Stack, Tags } from 'aws-cdk-lib';
+import { App, BootstraplessSynthesizer, CfnOutput, SecretValue, Stack, Tags } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
@@ -8,11 +8,17 @@ import { join } from 'path';
 
 const app = new App();
 // Account comes from the deploying profile, so the public repo never names it.
-const stack = new Stack(app, 'AnventoHermes', { env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' } });
+// Bootstrapless: the anvento-devs group can't read CDK's bootstrap-version SSM parameter or assume its
+// deploy role, so CloudFormation gets CDK's exec role directly (needs iam:PassRole). The stack has no
+// assets. Back to the default synthesizer once the group may assume cdk-hnb659fds-* roles.
+const stack = new Stack(app, 'AnventoHermes', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' },
+  synthesizer: new BootstraplessSynthesizer(),
+});
 Tags.of(stack).add('Project', 'anvento-hermes');
 
 // Slack Socket Mode is outbound-only: a public subnet, no NAT, no inbound rules.
-// The AZ is explicit so synth needs no context lookup (which would write the account into cdk.context.json).
+// Synth still looks up the AZ list into cdk.context.json, which is gitignored (it names the account).
 const vpc = new ec2.Vpc(stack, 'Vpc', {
   availabilityZones: ['us-east-1a'],
   natGateways: 0,
