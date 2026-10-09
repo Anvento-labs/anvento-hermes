@@ -1,0 +1,15 @@
+{
+  "name": "anvento-hermes-infra",
+  "private": true,
+  "scripts": {
+    "cdk": "cdk"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.273.0",
+    "constructs": "^10.5.0"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.1145.0",
+    "tsx": "^4.20.0"
+  }
+}

@@ -1,0 +1,3 @@
+cdk.out/
+# Holds the AWS account ID (AZ lookup); the repo is public. Regenerated on synth.
+cdk.context.json

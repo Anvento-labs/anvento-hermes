@@ -1,0 +1,20 @@
+# config.yaml for the AWS box. boot.sh copies it over $HERMES_HOME/config.yaml on every boot,
+# so change behaviour here, push, and reboot. Secrets: Secrets Manager "anvento-hermes/env".
+model:
+  provider: "bedrock"
+  default: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+bedrock:
+  region: "us-east-1"   # credentials come from the instance role
+terminal:
+  # Shell commands from Slack run in a container: no access to .env or the instance role.
+  backend: "docker"
+  container_memory: 1024   # MB; t4g.small has 2 GB
+# Every workspace member can chat; slash commands are tiered below.
+allow_all_users: true
+slack:
+  # Admins run every slash command; everyone else gets /help, /whoami + these.
+  allow_admin_from: ["U0APQM7SVK9", "U09CEQ1QQ87"]
+  group_allow_admin_from: ["U0APQM7SVK9", "U09CEQ1QQ87"]
+  user_allowed_commands: [new, stop, status]
+  group_user_allowed_commands: [new, stop, status]
+  gateway_restart_notification: false   # a reboot-deploy would otherwise post in Slack
