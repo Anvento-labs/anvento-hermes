@@ -1,5 +1,5 @@
 // AnventoHermes: one EC2 box running the Hermes Slack gateway. Runbook: README.md.
-import { App, BootstraplessSynthesizer, CfnOutput, SecretValue, Stack, Tags } from 'aws-cdk-lib';
+import { App, CfnOutput, SecretValue, Stack, Tags } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as sm from 'aws-cdk-lib/aws-secretsmanager';
@@ -8,13 +8,7 @@ import { join } from 'path';
 
 const app = new App();
 // Account comes from the deploying profile, so the public repo never names it.
-// Bootstrapless: the anvento-devs group can't read CDK's bootstrap-version SSM parameter or assume its
-// deploy role, so CloudFormation gets CDK's exec role directly (needs iam:PassRole). The stack has no
-// assets. Back to the default synthesizer once the group may assume cdk-hnb659fds-* roles.
-const stack = new Stack(app, 'AnventoHermes', {
-  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' },
-  synthesizer: new BootstraplessSynthesizer(),
-});
+const stack = new Stack(app, 'AnventoHermes', { env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: 'us-east-1' } });
 Tags.of(stack).add('Project', 'anvento-hermes');
 
 // Slack Socket Mode is outbound-only: a public subnet, no NAT, no inbound rules.
@@ -65,6 +59,8 @@ const box = new ec2.Instance(stack, 'Box', {
 });
 
 secret.grantRead(box);
+// Session Manager shell and send-command (README: Shell and logs); no SSH, no inbound port.
+box.role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
 box.addToRolePolicy(new iam.PolicyStatement({
   actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
   resources: [

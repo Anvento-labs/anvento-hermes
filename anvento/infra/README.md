@@ -51,12 +51,20 @@ aws ec2 get-console-output --latest --output text --profile discoverITlabs --reg
 `hermes-boot: OK <sha>` means the gateway started on that commit; `hermes-boot: FAILED at line N`
 points into `boot.sh`.
 
+## Shell and logs (Session Manager, no SSH)
+
+```bash
+aws ssm start-session --target <InstanceId> --profile discoverITlabs --region us-east-1
+sudo -iu hermes
+journalctl -u 'hermes-gateway*' -n 200      # service log
+tail -n 100 ~/.hermes/logs/errors.log       # also gateway.log, agent.log
+cat ~/.hermes/gateway_state.json            # platforms.slack.state should be "connected"
+```
+
+Redeploy without a reboot: `sudo bash /var/lib/cloud/instance/scripts/part-002` reruns `boot.sh`.
+
 ## Not set up (yet)
 
-- **Shell or logs on the box.** The `anvento-devs` IAM group has no SSM permissions. Once it does,
-  add `AmazonSSMManagedInstanceCore` to the instance role and use
-  `aws ssm start-session --target <id>`. Logs are in `journalctl -u 'hermes-gateway*'` and
-  `/home/hermes/.hermes/logs/`.
-- **CI auto-deploy and a CloudWatch agent.**
+- CI auto-deploy and a CloudWatch agent.
 
 Cost is about $19/month (instance, public IPv4, 30 GB disk, the secret), plus Bedrock usage.
