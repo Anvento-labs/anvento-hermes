@@ -9,8 +9,8 @@ terminal:
   # Shell commands from Slack run in a container: no access to .env or the instance role.
   backend: "docker"
   container_memory: 1024   # MB; t4g.small has 2 GB
-# Every workspace member can chat; slash commands are tiered below.
-allow_all_users: true
+# Open access is Slack-only (SLACK_ALLOW_ALL_USERS=true in the secret). A top-level allow_all_users
+# would also admit any sender on the internet by email.
 slack:
   # Admins run every slash command; everyone else gets /help, /whoami + these.
   allow_admin_from: ["U0APQM7SVK9", "U09CEQ1QQ87"]
@@ -18,3 +18,9 @@ slack:
   user_allowed_commands: [new, stop, status]
   group_user_allowed_commands: [new, stop, status]
   gateway_restart_notification: false   # a reboot-deploy would otherwise post in Slack
+platforms:
+  email:
+    extra:
+      # Google Workspace's receiving server; Hermes trusts only the From: it authenticated.
+      # Account, password and EMAIL_ALLOWED_USERS live in the secret (README: Email).
+      authserv_id: "mx.google.com"

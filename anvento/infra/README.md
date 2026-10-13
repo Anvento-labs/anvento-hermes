@@ -29,10 +29,38 @@ Use a **separate Slack app** from the Mac dev bot: two gateways on one app split
 
 1. Create the app from a manifest (`anvento/launch-hermes.sh slack manifest --agent-view`), then
    install it and create an app-level token with `connections:write`.
-2. In AWS console → Secrets Manager → `anvento-hermes/env` → Retrieve secret value → Edit, set
-   `SLACK_BOT_TOKEN` (`xoxb-…`) and `SLACK_APP_TOKEN` (`xapp-…`). Any other key added there also
-   lands in the box's `.env`.
+2. In AWS console → Secrets Manager → `anvento-hermes/env` → Retrieve secret value → Edit, fill in
+   `SLACK_BOT_TOKEN` (`xoxb-…`) and `SLACK_APP_TOKEN` (`xapp-…`). Every key in the secret lands in
+   the box's `.env`. `SLACK_ALLOW_ALL_USERS=true` lets every workspace member chat. There is no global
+   `allow_all_users` in `hermes-config.yaml`, because it would also open email to any sender.
 3. Reboot the box.
+
+**Changing the key list in `app.ts` resets every value on the next deploy, tokens included.** Add
+optional keys in the console instead, and paste the tokens again after any such deploy.
+
+## Email
+
+The upstream email adapter (`website/docs/user-guide/messaging/email.md`) checks a dedicated
+Google Workspace mailbox over IMAP and replies over SMTP, in the same gateway as Slack.
+
+1. Create a dedicated mailbox, turn on 2-Step Verification for it, then create an
+   [app password](https://myaccount.google.com/apppasswords).
+2. Fill in the pre-created keys in the secret `anvento-hermes/env`. The IMAP and SMTP hosts are
+   already set to Gmail's.
+
+   | Key | Value |
+   |---|---|
+   | `EMAIL_ADDRESS` | the mailbox address |
+   | `EMAIL_PASSWORD` | the app password |
+   | `EMAIL_ALLOWED_USERS` | comma-separated sender addresses (**required**: whole addresses, no domain wildcards) |
+
+3. Reboot the box.
+
+Email is off while `EMAIL_ADDRESS` is empty; to pause it, clear that value and reboot. Hermes answers
+only mail that arrives after it starts, and marks new mail as read, including mail from senders
+it ignores. It drops any message whose `From:` Google didn't authenticate (`authserv_id` in
+`hermes-config.yaml`). It ignores mail from its own address. Any sender on the list can make the
+bot run shell commands in the sandbox, the same as on Slack.
 
 ## Redeploy (code or `hermes-config.yaml`)
 

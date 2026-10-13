@@ -20,14 +20,21 @@ const vpc = new ec2.Vpc(stack, 'Vpc', {
 });
 const sg = new ec2.SecurityGroup(stack, 'Sg', { vpc, allowAllOutbound: true, description: 'Hermes box: no inbound' });
 
-// boot.sh writes these keys to $HERMES_HOME/.env on every boot. Placeholders are set once;
-// values edited in the console survive later deploys because the template value never changes.
+// boot.sh writes these keys to $HERMES_HOME/.env on every boot. Values edited in the console survive
+// later deploys only while this list is unchanged: editing it makes the next deploy reset EVERY value,
+// Slack tokens included. Email stays off until EMAIL_ADDRESS and EMAIL_PASSWORD are filled in.
 const secret = new sm.Secret(stack, 'Env', {
   secretName: 'anvento-hermes/env',
-  description: 'Hermes box .env (written on every boot). Replace the placeholders, then reboot the box.',
+  description: 'Hermes box .env (written on every boot). Fill in the placeholders, then reboot the box.',
   secretObjectValue: {
     SLACK_BOT_TOKEN: SecretValue.unsafePlainText('replace-me'),
     SLACK_APP_TOKEN: SecretValue.unsafePlainText('replace-me'),
+    SLACK_ALLOW_ALL_USERS: SecretValue.unsafePlainText('true'),
+    EMAIL_ADDRESS: SecretValue.unsafePlainText(''),
+    EMAIL_PASSWORD: SecretValue.unsafePlainText(''),
+    EMAIL_IMAP_HOST: SecretValue.unsafePlainText('imap.gmail.com'),
+    EMAIL_SMTP_HOST: SecretValue.unsafePlainText('smtp.gmail.com'),
+    EMAIL_ALLOWED_USERS: SecretValue.unsafePlainText(''),
   },
 });
 
