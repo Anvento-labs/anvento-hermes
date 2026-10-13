@@ -9,6 +9,7 @@ instance role. Bedrock is reached through the instance role.
 | `app.ts` | The whole stack: VPC (public subnet, no NAT), security group (no ingress), secret, IAM, instance |
 | `boot.sh` | User data, run on **every boot**: pull `main`, install, write config + `.env`, start the gateway |
 | `hermes-config.yaml` | The box's `config.yaml` (behaviour only, no secrets) |
+| `SOUL.md` | The bot's persona (Anvento Bot). Copied to `$HERMES_HOME/SOUL.md` on every boot; it applies to new sessions (`!new`) |
 
 ## Deploy (first time, or after changing `app.ts` / `boot.sh`)
 
