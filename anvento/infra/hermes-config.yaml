@@ -24,3 +24,8 @@ platforms:
       # Google Workspace's receiving server; Hermes trusts only the From: it authenticated.
       # Account, password and EMAIL_ALLOWED_USERS live in the secret (README: Email).
       authserv_id: "mx.google.com"
+      # TEMPORARY: anventolabs.com has no SPF and no aligned DKIM, so Google can't authenticate our own
+      # senders and every one is dropped. Until DNS is fixed, From: is trusted as written, which means
+      # anyone can forge an allowed sender. Remove this once the DNS fix lands
+      # (harmeet/todo_longterm.md §5).
+      require_authenticated_sender: false
