@@ -27,7 +27,7 @@ sudo -iu hermes HERMES_REPO_URL="$REPO_URL" bash "$REPO/scripts/install.sh" --no
 
 # Behaviour and persona from the repo, secrets from Secrets Manager. Edits made on the box are overwritten.
 install -o hermes -g hermes -m 600 "$REPO/anvento/infra/hermes-config.yaml" "$HH/config.yaml"
-install -o hermes -g hermes -m 644 "$REPO/anvento/infra/SOUL.md" "$HH/SOUL.md"
+install -o hermes -g hermes -m 644 "$REPO/anvento/SOUL.md" "$HH/SOUL.md"
 (umask 077
  aws secretsmanager get-secret-value --region us-east-1 --secret-id anvento-hermes/env --query SecretString --output text \
    | python3 -c 'import json, sys; print("".join(f"{k}={v}\n" for k, v in json.load(sys.stdin).items()), end="")' > "$HH/.env")
